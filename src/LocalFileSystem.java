@@ -1,5 +1,8 @@
 import java.io.*;  // Import the File class
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.lang.Exception;
 import java.nio.file.*;
 
@@ -18,21 +21,29 @@ public class LocalFileSystem implements FileSystem {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "";*/
+        return "";
+        */
         return this.path;
     }
-    public String getParent(String path){ 
-        File file = new File(path);
+    public String getParent(){ 
+        File file = new File(this.path);
         return file.getParentFile().getName();
     }
-    public List<String> getChildren(String path){ 
-        return new ArrayList<>(); 
+    public List<String> getChildren(){   
+        return Stream.of(new File(this.path).listFiles())
+            //.filter(file -> !file.isDirectory())
+            .map(File::getName)
+            .collect(Collectors.toList());
     }
-    public List<String> getAncestor(String path){ return new ArrayList<>(); }
+    public List<String> getAncestor(String path){ 
+        List<String> ancestor = Arrays.asList(this.getRoot().split(Pattern.quote("\\")));
+        return ancestor.subList(0, ancestor.size()-1); 
+    }
     public String getAbsolutePath(String relativePath){ return ""; }
     public String getRelativePath(String absolutePath){ return ""; }
     public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){}
-    public FileSystem getReference(){return new LocalFileSystem("");}
+    
+    public FileSystem getReference(){return this;}
 
     public Path createDirectory(String path){
         try{
@@ -67,7 +78,7 @@ public class LocalFileSystem implements FileSystem {
 
     public static void main(String args[]) {  
         FileSystem fs = new LocalFileSystem("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee");
-        System.out.println(fs.createDirectory(fs.getRoot()+"/test"));
+        System.out.println(fs.getAncestor(fs.getParent()));
     }
 
 }

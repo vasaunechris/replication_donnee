@@ -6,8 +6,8 @@ import java.nio.file.*;
 public interface FileSystem {
 
     public String getRoot();
-    public String getParent(String path);
-    public List<String> getChildren(String path);
+    public String getParent();
+    public List<String> getChildren();
     public List<String> getAncestor(String path);
     public String getAbsolutePath(String relativePath);
     public String getRelativePath(String absolutePath);
