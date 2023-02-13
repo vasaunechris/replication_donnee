@@ -41,6 +41,7 @@ public class LocalFileSystem implements FileSystem {
             while ((length = ip.read(buffer)) > 0) {
                 op.write(buffer, 0, length);
             }
+            System.out.println("Copy is done");
         } catch (Exception e) {
             System.err.println("Failed to copy" + e.getMessage());
         } finally {
