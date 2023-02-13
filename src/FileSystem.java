@@ -13,7 +13,7 @@ public interface FileSystem {
     public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS);
     public FileSystem getReference();
     public File createDirectory(String path);
-    public void fileCopy(File input, File output) throws Exeception;
+    public void fileCopy(File input, File output) throws Exception;
 
 
 }
