@@ -5,29 +5,39 @@ import java.nio.file.*;
 
 public class LocalFileSystem implements FileSystem {
 
+    String path;
+
+    public LocalFileSystem(String path){
+        this.path = path;
+    }
+
     public String getRoot(){ 
-        File currentDir = new File(".");
+        /*File currentDir = new File(".");
         try {
             return currentDir.getCanonicalPath().toString();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "";
+        return "";*/
+        return this.path;
     }
     public String getParent(String path){ 
         File file = new File(path);
         return file.getParentFile().getName();
     }
-    public List<String> getChildren(String path){ return List<String>; }
-    public List<String> getAncestor(String path){ return List<String>; }
+    public List<String> getChildren(String path){ 
+        return new ArrayList<>(); 
+    }
+    public List<String> getAncestor(String path){ return new ArrayList<>(); }
     public String getAbsolutePath(String relativePath){ return ""; }
     public String getRelativePath(String absolutePath){ return ""; }
     public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){}
-    public FileSystem getReference(){return new FileSystem();}
+    public FileSystem getReference(){return new LocalFileSystem("");}
 
     public Path createDirectory(String path){
         try{
             Path p = Paths.get(path);
+            System.out.println();
             return Files.createDirectories(p);
         } catch (IOException e) {
             System.err.println("Failed to create" + e.getMessage());
@@ -53,6 +63,11 @@ public class LocalFileSystem implements FileSystem {
             ip.close();
             op.close();
         }
+    }
+
+    public static void main(String args[]) {  
+        FileSystem fs = new LocalFileSystem("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee");
+        System.out.println(fs.createDirectory(fs.getRoot()+"/test"));
     }
 
 }
