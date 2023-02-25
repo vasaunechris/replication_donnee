@@ -39,8 +39,10 @@ public class LocalFileSystem implements FileSystem {
         List<String> ancestor = Arrays.asList(this.getRoot().split(Pattern.quote("\\")));
         return ancestor.subList(0, ancestor.size()-1); 
     }
-    public String getAbsolutePath(String relativePath){ return ""; }
-    public String getRelativePath(String absolutePath){ return ""; }
+    public String getAbsolutePath(String relativePath){ return this.getRoot() + relativePath; }
+
+    public String getRelativePath(String absolutePath){ return absolutePath.split("\\" + this.getParent())[0]; }
+
     public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){}
     
     public FileSystem getReference(){return this;}
@@ -48,7 +50,6 @@ public class LocalFileSystem implements FileSystem {
     public Path createDirectory(String path){
         try{
             Path p = Paths.get(path);
-            System.out.println();
             return Files.createDirectories(p);
         } catch (IOException e) {
             System.err.println("Failed to create" + e.getMessage());
@@ -78,7 +79,7 @@ public class LocalFileSystem implements FileSystem {
 
     public static void main(String args[]) {  
         FileSystem fs = new LocalFileSystem("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee");
-        System.out.println(fs.getAncestor(fs.getParent()));
+        System.out.println("\\"+fs.getParent());
     }
 
 }
