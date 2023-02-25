@@ -41,7 +41,12 @@ public class LocalFileSystem implements FileSystem {
     }
     public String getAbsolutePath(String relativePath){ return ""; }
     public String getRelativePath(String absolutePath){ return ""; }
-    public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){}
+    public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){
+        Path sourcePath = rootPath.resolve(filePath);
+        Path targetPath = otherFs.rootPath.resolve(otherFilePath);
+        Files.createDirectories(targetPath.getParent());
+        Files.copy(sourcePath, targetPath);
+    }
     
     public FileSystem getReference(){return this;}
 
