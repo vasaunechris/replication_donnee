@@ -43,7 +43,12 @@ public class LocalFileSystem implements FileSystem {
 
     public String getRelativePath(String absolutePath){ return absolutePath.split("\\" + this.getParent())[0]; }
 
-    public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){}
+    public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){
+        Path sourcePath = rootPath.resolve(filePath);
+        Path targetPath = otherFs.rootPath.resolve(otherFilePath);
+        Files.createDirectories(targetPath.getParent());
+        Files.copy(sourcePath, targetPath);
+    }
     
     public FileSystem getReference(){return this;}
 
@@ -75,6 +80,16 @@ public class LocalFileSystem implements FileSystem {
             ip.close();
             op.close();
         }
+    }
+
+    public boolean isNewer(Path filePath, FileSystem otherFs, Path otherFilePath) throws IOException {
+        Instant modifiedTime = Files.getLastModifiedTime(rootPath.resolve(filePath)).toInstant();
+        Instant otherModifiedTime = Files.getLastModifiedTime(otherFs.rootPath.resolve(otherFilePath)).toInstant();
+        return modifiedTime.isAfter(otherModifiedTime);
+    }
+    
+    public boolean isFileExists(Path filePath) {
+        return Files.exists(rootPath.resolve(filePath));
     }
 
     public static void main(String args[]) {  

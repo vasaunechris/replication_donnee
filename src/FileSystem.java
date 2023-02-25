@@ -15,6 +15,6 @@ public interface FileSystem {
     public FileSystem getReference();
     public Path createDirectory(String path);
     public void fileCopy(File input, File output) throws Exception;
-
+    public boolean isFileExists(Path filePath);
 
 }
