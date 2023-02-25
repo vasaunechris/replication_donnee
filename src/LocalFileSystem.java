@@ -76,6 +76,16 @@ public class LocalFileSystem implements FileSystem {
         }
     }
 
+    public boolean isNewer(Path filePath, FileSystem otherFs, Path otherFilePath) throws IOException {
+        Instant modifiedTime = Files.getLastModifiedTime(rootPath.resolve(filePath)).toInstant();
+        Instant otherModifiedTime = Files.getLastModifiedTime(otherFs.rootPath.resolve(otherFilePath)).toInstant();
+        return modifiedTime.isAfter(otherModifiedTime);
+    }
+    
+    public boolean isFileExists(Path filePath) {
+        return Files.exists(rootPath.resolve(filePath));
+    }
+
     public static void main(String args[]) {  
         FileSystem fs = new LocalFileSystem("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee");
         System.out.println(fs.getAncestor(fs.getParent()));
