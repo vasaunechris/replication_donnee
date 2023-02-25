@@ -5,16 +5,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.lang.Exception;
 import java.nio.file.*;
+import java.time.Instant;
 
 public class LocalFileSystem implements FileSystem {
 
-    String path;
+    Path path;
 
-    public LocalFileSystem(String path){
+    public LocalFileSystem(Path path){
         this.path = path;
     }
 
-    public String getRoot(){ 
+    public Path getRoot(){ 
         /*File currentDir = new File(".");
         try {
             return currentDir.getCanonicalPath().toString();
@@ -26,17 +27,19 @@ public class LocalFileSystem implements FileSystem {
         return this.path;
     }
     public String getParent(){ 
-        File file = new File(this.path);
+        File file = new File(this.path.toString());
         return file.getParentFile().getName();
     }
-    public List<String> getChildren(){   
-        return Stream.of(new File(this.path).listFiles())
-            //.filter(file -> !file.isDirectory())
+    public List<String> getChildren(String path){
+       
+        return Stream.of(new File(path).listFiles())
+            .filter(file -> !file.isDirectory())
             .map(File::getName)
             .collect(Collectors.toList());
+        
     }
     public List<String> getAncestor(String path){ 
-        List<String> ancestor = Arrays.asList(this.getRoot().split(Pattern.quote("\\")));
+        List<String> ancestor = Arrays.asList(this.getRoot().toString().split(Pattern.quote("\\")));
         return ancestor.subList(0, ancestor.size()-1); 
     }
     public String getAbsolutePath(String relativePath){ return this.getRoot() + relativePath; }
@@ -44,10 +47,14 @@ public class LocalFileSystem implements FileSystem {
     public String getRelativePath(String absolutePath){ return absolutePath.split("\\" + this.getParent())[0]; }
 
     public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){
-        Path sourcePath = rootPath.resolve(filePath);
-        Path targetPath = otherFs.rootPath.resolve(otherFilePath);
-        Files.createDirectories(targetPath.getParent());
-        Files.copy(sourcePath, targetPath);
+        Path sourcePath = this.getRoot().resolve(absolutePathSourceFS);
+        Path targetPath = fsSource.getRoot().resolve(absolutePathTargetFS);
+        this.createDirectory(targetPath.getParent().toString());
+        try {
+            Files.copy(sourcePath, targetPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     public FileSystem getReference(){return this;}
@@ -83,18 +90,40 @@ public class LocalFileSystem implements FileSystem {
     }
 
     public boolean isNewer(Path filePath, FileSystem otherFs, Path otherFilePath) throws IOException {
-        Instant modifiedTime = Files.getLastModifiedTime(rootPath.resolve(filePath)).toInstant();
-        Instant otherModifiedTime = Files.getLastModifiedTime(otherFs.rootPath.resolve(otherFilePath)).toInstant();
+        Instant modifiedTime = Files.getLastModifiedTime(this.getRoot().resolve(filePath)).toInstant();
+        Instant otherModifiedTime = Files.getLastModifiedTime(otherFs.getRoot().resolve(otherFilePath)).toInstant();
         return modifiedTime.isAfter(otherModifiedTime);
     }
     
     public boolean isFileExists(Path filePath) {
-        return Files.exists(rootPath.resolve(filePath));
+        return Files.exists(this.getRoot().resolve(filePath));
+    }
+
+    public String[] getSubDirectories(String relativePath) throws IOException {
+        Path dirPath = this.getRoot().resolve(relativePath);
+        List<String> subDirs = new ArrayList<>();
+
+        if (Files.isDirectory(dirPath)) {
+            Files.list(dirPath)
+                    .filter(Files::isDirectory)
+                    .forEach(subDirPath -> {
+                        Path subDirRelativePath = this.getRoot().relativize(subDirPath);
+                        subDirs.add(subDirRelativePath.toString());
+                    });
+        }
+
+        return subDirs.toArray(new String[0]);
     }
 
     public static void main(String args[]) {  
-        FileSystem fs = new LocalFileSystem("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee");
-        System.out.println("\\"+fs.getParent());
+        Path path1 = Paths.get("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee\\test");
+        Path path2 = Paths.get("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee\\test2");
+
+        FileSystem fs1 = new LocalFileSystem(path1);
+        FileSystem fs2 = new LocalFileSystem(path2);
+
+
+        
     }
 
 }

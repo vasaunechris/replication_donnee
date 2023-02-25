@@ -1,13 +1,12 @@
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Synchronizer {
+public class FileSynchronizer {
 
-    public void synchronize(FileSystem fs1, FileSystem fs2) {
+    public void synchronize(FileSystem fs1, FileSystem fs2) throws IOException {
         FileSystem refCopy1 = fs1.getReference();
         FileSystem refCopy2 = fs2.getReference();
         List<String> dirtyPaths1 = computeDirty(refCopy1, fs1, "");
@@ -22,25 +21,25 @@ public class Synchronizer {
             Path fullPath = Paths.get(currentRelativePath, path);
             if (dirtyPaths2.contains(path)) {
                 if (fs1.isNewer(fullPath, fs2, fullPath)) {
-                    fs2.replace(fullPath, fs1, fullPath);
+                    fs2.replace(fullPath.toString(), fs1, fullPath.toString());
                 } else {
-                    fs1.replace(fullPath, fs2, fullPath);
+                    fs1.replace(fullPath.toString(), fs2, fullPath.toString());
                 }
                 dirtyPaths2.remove(path);
             } else {
-                fs1.replace(fullPath, fs2, fullPath);
+                fs1.replace(fullPath.toString(), fs2, fullPath.toString());
             }
         }
 
         for (String path : dirtyPaths2) {
             Path fullPath = Paths.get(currentRelativePath, path);
-            fs2.replace(fullPath, fs1, fullPath);
+            fs2.replace(fullPath.toString(), fs1, fullPath.toString());
         }
 
         for (String subDir : fs1.getSubDirectories(currentRelativePath)) {
             String subPath = Paths.get(currentRelativePath, subDir).toString();
-            List<String> subDirtyPaths1 = computeDirty(fs1, subPath);
-            List<String> subDirtyPaths2 = computeDirty(fs2, subPath);
+            List<String> subDirtyPaths1 = computeDirty(fs1.getReference(), fs1, subPath);
+            List<String> subDirtyPaths2 = computeDirty(fs2.getReference(), fs2, subPath);
             reconcile(fs1, subDirtyPaths1, fs2, subDirtyPaths2, subPath);
         }
     }
@@ -48,7 +47,7 @@ public class Synchronizer {
     public List<String> computeDirty(FileSystem lastSync, FileSystem fs, String currentRelativePath) throws IOException {
         List<String> dirtyPaths = new ArrayList<>();
 
-        for (String file : fs.getFiles(currentRelativePath)) {
+        for (String file : fs.getChildren(currentRelativePath)) {
             Path fullPath = Paths.get(currentRelativePath, file);
             if (!lastSync.isFileExists(fullPath) || lastSync.isNewer(fullPath, fs, fullPath)) {
                 dirtyPaths.add(file);
@@ -65,4 +64,19 @@ public class Synchronizer {
 
         return dirtyPaths;
     }
+    public static void main(String args[]) {  
+        Path path1 = Paths.get("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee\\test");
+        Path path2 = Paths.get("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee\\test2");
+        FileSystem fs1 = new LocalFileSystem(path1);
+        FileSystem fs2 = new LocalFileSystem(path2);
+
+        FileSynchronizer sync = new FileSynchronizer();
+        try {
+            sync.synchronize(fs1, fs2);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
 }
