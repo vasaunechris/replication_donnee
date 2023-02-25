@@ -22,19 +22,19 @@ public class Synchronizer {
             Path fullPath = Paths.get(currentRelativePath, path);
             if (dirtyPaths2.contains(path)) {
                 if (fs1.isNewer(fullPath, fs2, fullPath)) {
-                    fs2.copyTo(fullPath, fs1, fullPath);
+                    fs2.replace(fullPath, fs1, fullPath);
                 } else {
-                    fs1.copyTo(fullPath, fs2, fullPath);
+                    fs1.replace(fullPath, fs2, fullPath);
                 }
                 dirtyPaths2.remove(path);
             } else {
-                fs1.copyTo(fullPath, fs2, fullPath);
+                fs1.replace(fullPath, fs2, fullPath);
             }
         }
 
         for (String path : dirtyPaths2) {
             Path fullPath = Paths.get(currentRelativePath, path);
-            fs2.copyTo(fullPath, fs1, fullPath);
+            fs2.replace(fullPath, fs1, fullPath);
         }
 
         for (String subDir : fs1.getSubDirectories(currentRelativePath)) {
