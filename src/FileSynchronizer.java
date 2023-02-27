@@ -18,7 +18,7 @@ public class FileSynchronizer {
                           String currentRelativePath) throws IOException {
 
         for (String path : dirtyPaths1) {
-            Path fullPath = Paths.get(currentRelativePath, path);
+            Path fullPath = Paths.get(/*currentRelativePath,*/ path);
             if (dirtyPaths2.contains(path)) {
                 if (fs1.isNewer(fullPath, fs2, fullPath)) {
                     fs2.replace(fullPath.toString(), fs1, fullPath.toString());
@@ -32,12 +32,12 @@ public class FileSynchronizer {
         }
 
         for (String path : dirtyPaths2) {
-            Path fullPath = Paths.get(currentRelativePath, path);
+            Path fullPath = Paths.get(/*currentRelativePath,*/ path);
             fs2.replace(fullPath.toString(), fs1, fullPath.toString());
         }
 
         for (String subDir : fs1.getSubDirectories(currentRelativePath)) {
-            String subPath = Paths.get(currentRelativePath, subDir).toString();
+            String subPath = Paths.get(/*currentRelativePath,*/ subDir).toString();
             List<String> subDirtyPaths1 = computeDirty(fs1.getReference(), fs1, subPath);
             List<String> subDirtyPaths2 = computeDirty(fs2.getReference(), fs2, subPath);
             reconcile(fs1, subDirtyPaths1, fs2, subDirtyPaths2, subPath);
@@ -47,15 +47,15 @@ public class FileSynchronizer {
     public List<String> computeDirty(FileSystem lastSync, FileSystem fs, String currentRelativePath) throws IOException {
         List<String> dirtyPaths = new ArrayList<>();
 
-        for (String file : fs.getChildren(currentRelativePath)) {
-            Path fullPath = Paths.get(currentRelativePath, file);
+        for (String file : fs.getFiles(currentRelativePath)) {
+            Path fullPath = Paths.get(file);
             if (!lastSync.isFileExists(fullPath) || lastSync.isNewer(fullPath, fs, fullPath)) {
                 dirtyPaths.add(file);
             }
         }
 
         for (String subDir : fs.getSubDirectories(currentRelativePath)) {
-            String subPath = Paths.get(currentRelativePath, subDir).toString();
+            String subPath = Paths.get(subDir).toString();
             List<String> subDirtyPaths = computeDirty(lastSync, fs, subPath);
             if (!subDirtyPaths.isEmpty()) {
                 dirtyPaths.add(subDir);

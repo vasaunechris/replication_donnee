@@ -1,1 +1,4 @@
-bin/
+
+bin
+test/
+test2/

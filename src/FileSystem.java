@@ -19,5 +19,6 @@ public interface FileSystem {
     public boolean isFileExists(Path filePath);
     public boolean isNewer(Path fullPath, FileSystem fs2, Path fullPath2) throws IOException;
     public String[] getSubDirectories(String relativePath) throws IOException;
+    public String[] getFiles(String relativePath) throws IOException;
 
 }

@@ -32,11 +32,27 @@ public class LocalFileSystem implements FileSystem {
     }
     public List<String> getChildren(String path){
        
-        return Stream.of(new File(path).listFiles())
+        return Stream.of(new File(this.getRoot().resolve(path).toString()).listFiles())
             .filter(file -> !file.isDirectory())
             .map(File::getName)
             .collect(Collectors.toList());
         
+    }
+
+    public String[] getFiles(String relativePath) throws IOException {
+        Path dirPath = this.getRoot().resolve(relativePath);
+        List<String> files = new ArrayList<>();
+
+        if (Files.isDirectory(dirPath)) {
+            Files.list(dirPath)
+                    .filter(Files::isRegularFile)
+                    .forEach(filePath -> {
+                        Path fileRelativePath = this.getRoot().relativize(filePath);
+                        files.add(fileRelativePath.toString());
+                    });
+        }
+
+        return files.toArray(new String[0]);
     }
     public List<String> getAncestor(String path){ 
         List<String> ancestor = Arrays.asList(this.getRoot().toString().split(Pattern.quote("\\")));
@@ -49,9 +65,8 @@ public class LocalFileSystem implements FileSystem {
     public void replace(String absolutePathTargetFS, FileSystem fsSource, String absolutePathSourceFS){
         Path sourcePath = this.getRoot().resolve(absolutePathSourceFS);
         Path targetPath = fsSource.getRoot().resolve(absolutePathTargetFS);
-        this.createDirectory(targetPath.getParent().toString());
         try {
-            Files.copy(sourcePath, targetPath);
+            Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -92,7 +107,7 @@ public class LocalFileSystem implements FileSystem {
     public boolean isNewer(Path filePath, FileSystem otherFs, Path otherFilePath) throws IOException {
         Instant modifiedTime = Files.getLastModifiedTime(this.getRoot().resolve(filePath)).toInstant();
         Instant otherModifiedTime = Files.getLastModifiedTime(otherFs.getRoot().resolve(otherFilePath)).toInstant();
-        return modifiedTime.isAfter(otherModifiedTime);
+        return !modifiedTime.isAfter(otherModifiedTime);
     }
     
     public boolean isFileExists(Path filePath) {
@@ -116,14 +131,8 @@ public class LocalFileSystem implements FileSystem {
     }
 
     public static void main(String args[]) {  
-        Path path1 = Paths.get("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee\\test");
-        Path path2 = Paths.get("C:\\Users\\Christian Vasaune\\Desktop\\replication\\replication_donnee\\test2");
-
-        FileSystem fs1 = new LocalFileSystem(path1);
-        FileSystem fs2 = new LocalFileSystem(path2);
-
-
         
+
     }
 
 }
